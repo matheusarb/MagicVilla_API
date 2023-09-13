@@ -33,7 +33,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpGet("{id:int}", Name ="GetVilla")]
         public ActionResult<VillaDTO> GetVilla(int id)
         {
-            _logger.Log($"Get villa error with id {id}", "info");
+            _logger.Log($"Get villa error with id {id}", "error");
             if (id == 0)
             {
                 return BadRequest();
