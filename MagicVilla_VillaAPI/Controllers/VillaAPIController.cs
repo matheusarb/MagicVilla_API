@@ -3,6 +3,7 @@ using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla_VillaAPI.Controllers 
 {
@@ -48,7 +49,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost] // Create
-        public ActionResult<VillaDTO> CreateVilla([FromBody]VillaDTO villaDto)
+        public ActionResult<VillaDTO> CreateVilla([FromBody]VillaCreateDTO villaDto)
         {
             // podemos validar as propriedades do Model que usamos neste contexto de duas formas:
             // 1. Passando a validação através de atributos no VillaDTO E usando o atributo [ApiController], que é quem importará funcionalidades básicas e habilitará a leitura do código dos atributos lá anotados
@@ -66,16 +67,11 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return BadRequest();
             }
-            if (villaDto.Id > 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
 
-            var villaModel = new VillaModel()
+            var model = new VillaModel()
             {
                 Amenity = villaDto.Amenity,
                 Details = villaDto.Details,
-                Id = villaDto.Id,
                 ImageUrl = villaDto.ImageUrl,
                 Name = villaDto.Name,
                 Occupancy = villaDto.Occupancy,
@@ -83,10 +79,10 @@ namespace MagicVilla_VillaAPI.Controllers
                 Sqft = villaDto.Sqft
             };
 
-            _db.Villas.Add(villaModel);
+            _db.Villas.Add(model);
             _db.SaveChanges();
 
-            return CreatedAtRoute("GetVilla", new { Id = villaDto.Id }, villaDto);
+            return CreatedAtRoute("GetVilla", new { Id = model.Id }, model);
             ;
         }
 
@@ -114,7 +110,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpPut("{id:int}", Name ="UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVilla(int id, [FromBody]VillaDTO villaDto)
+        public IActionResult UpdateVilla(int id, [FromBody]VillaUpdateDTO villaDto)
         {
             if(villaDto == null || id != villaDto.Id)
             {
@@ -148,16 +144,16 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDTO> patchDTO)
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if(id == 0 || patchDTO == null)
             {
                 return BadRequest();
             }
 
-            var villa = _db.Villas.FirstOrDefault(x=>x.Id==id);
+            var villa = _db.Villas.AsNoTracking().FirstOrDefault(x=>x.Id==id);
 
-            var villaDtoModel = new VillaDTO()
+            VillaUpdateDTO villaDtoModel = new()
             {
                 Amenity = villa.Amenity,
                 Details = villa.Details,
@@ -176,18 +172,20 @@ namespace MagicVilla_VillaAPI.Controllers
 
             patchDTO.ApplyTo(villaDtoModel, ModelState);
 
-            var villaModel = new VillaModel()
+            VillaModel model = new VillaModel()
             {
-                Amenity = villaDto.Amenity,
-                Details = villaDto.Details,
-                Id = villaDto.Id,
-                ImageUrl = villaDto.ImageUrl,
-                Name = villaDto.Name,
-                Occupancy = villaDto.Occupancy,
-                Rate = villaDto.Rate,
-                Sqft = villaDto.Sqft
+                Amenity = villaDtoModel.Amenity,
+                Details = villaDtoModel.Details,
+                Id = villaDtoModel.Id,
+                ImageUrl = villaDtoModel.ImageUrl,
+                Name = villaDtoModel.Name,
+                Occupancy = villaDtoModel.Occupancy,
+                Rate = villaDtoModel.Rate,
+                Sqft = villaDtoModel.Sqft
             };
 
+            _db.Villas.Update(model);
+            _db.SaveChanges();
 
             if (!ModelState.IsValid)
             {
