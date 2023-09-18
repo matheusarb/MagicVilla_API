@@ -15,13 +15,13 @@ namespace MagicVilla_VillaAPI.Repository
             _db = db;
         }
 
-        public async Task Create(VillaModel entity)
+        public async Task CreateAsync(VillaModel entity)
         {
             await _db.Villas.AddAsync(entity);
-            Save();
+            await SaveAsync();
         }
 
-        public async Task<VillaModel> Get(Expression<Func<VillaModel, bool>> filter = null, bool tracked = true)
+        public async Task<VillaModel> GetAsync(Expression<Func<VillaModel, bool>> filter = null, bool tracked = true)
         {
             IQueryable<VillaModel> query = _db.Villas;
 
@@ -37,7 +37,7 @@ namespace MagicVilla_VillaAPI.Repository
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<List<VillaModel>> GetAll(Expression<Func<VillaModel, bool>> filter = null)
+        public async Task<List<VillaModel>> GetAllAsync(Expression<Func<VillaModel, bool>> filter = null)
         {
             IQueryable<VillaModel> query = _db.Villas;
 
@@ -49,15 +49,21 @@ namespace MagicVilla_VillaAPI.Repository
             return await query.ToListAsync();
         }
 
-        public async Task Remove(VillaModel entity)
+        public async Task RemoveAsync(VillaModel entity)
         {
             _db.Villas.Remove(entity);
+            await SaveAsync();
+        }
+
+        public async Task SaveAsync()
+        {
             await _db.SaveChangesAsync();
         }
 
-        public async Task Save()
+        public async Task UpdateAsync(VillaModel entity)
         {
-            _db.SaveChangesAsync();
+            _db.Villas.Update(entity);
+            await SaveAsync();
         }
     }
 }

@@ -7,14 +7,16 @@ namespace MagicVilla_VillaAPI.Repository.IRepository
     {
         //Task é um tipo assíncrono
 
-        Task<List<VillaModel>> GetAll(Expression<Func<VillaModel, bool>> filter = null);
+        Task<List<VillaModel>> GetAllAsync(Expression<Func<VillaModel, bool>> filter = null);
 
-        Task<VillaModel> Get(Expression<Func<VillaModel, bool>> filter = null, bool tracked=true);
+        Task<VillaModel> GetAsync(Expression<Func<VillaModel, bool>> filter = null, bool tracked=true);
 
-        Task Create(VillaModel entity);
+        Task CreateAsync(VillaModel entity);
         
-        Task Remove(VillaModel entity);
+        Task UpdateAsync(VillaModel entity);
         
-        Task Save();
+        Task RemoveAsync(VillaModel entity);
+        
+        Task SaveAsync();
     }
 }
